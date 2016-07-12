@@ -11,6 +11,7 @@ import SpriteKit
 
 class GameViewController: UIViewController {
 
+    @IBOutlet weak var bottomView: UIView!
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -26,7 +27,10 @@ class GameViewController: UIViewController {
             /* Set the scale mode to scale to fit the window */
             //scene.scaleMode = .AspectFill
             scene.size = skView.bounds.size
+           
             
+            
+            //scene.physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRectMake(0, 0, skView.frame.width, skView.frame.height * 0.25))
            // scene.physicsBody = [SKPhysicsBody bodyWithEdgeLoopFromRect: self.frame];
     
 
@@ -34,38 +38,14 @@ class GameViewController: UIViewController {
 
             skView.presentScene(scene)
         }
+        
+        self.view.sendSubviewToBack(bottomView)
     }
 
    
     
     
-    
-//    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-//        for touch in touches {
-//            let location = touch.locationInView(self.view)
-//            
-//            let screenSize : CGRect = UIScreen.mainScreen().bounds
-//            
-//            let smallX = screenSize.width * 0.34
-//            let smallY = screenSize.height * 0.8
-//            
-//            let centerPadX = screenSize.width * 0.17
-//            let centerPadY = screenSize.height * 0.9
-//            
-//            //print("C : \(smallX) \(smallY) \(centerPadX) \(centerPadY) \(location.x) \(location.y)")
-//            
-//            //print("Controller : \(centerPadX) - \(location.x)")
-//            if location.x <= smallX && location.y >= smallY{
-//                
-//                //let vector = CGVectorMake(-(centerPadX - location.x), -(centerPadY-location.y))
-//                              
-//            }
-//            
-//            
-//            
-//        }
-//        
-//    }
+
 
     
     
