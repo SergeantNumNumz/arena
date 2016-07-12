@@ -15,9 +15,11 @@ class GameScene: SKScene {
     let marker = SKSpriteNode()
     let screenHeight = UIScreen.mainScreen().bounds.height
     let screenWidth = UIScreen.mainScreen().bounds.width
+    
+    var touchPadX : CGFloat = 0.0
+    var touchPadY : CGFloat = 0.0
 
     var shape = SKShapeNode()
-    
     
     override func didMoveToView(view: SKView) {
         /* Setup your scene here */
@@ -29,40 +31,35 @@ class GameScene: SKScene {
         
         print("\(self.size.width), \(self.size.height)")
         
-        shape = SKShapeNode(rect: CGRectMake(self.size.width * 0.2, 0, screenWidth * 0.4, screenHeight * 0.25))
+        shape = SKShapeNode(rect: CGRectMake(0, 0, screenWidth * 0.4, screenHeight * 0.25))
         shape.fillColor = UIColor.redColor()
 
-        
-     
-//        shape.path = UIBezierPath(roundedRect: CGRect(x: 0, y: screenHeight * 0.75, width: screenWidth * 0.4, height: screenHeight * 0.25), cornerRadius: 64).CGPath
-//        shape.position = CGPoint(x: CGRectGetMidX(frame), y: CGRectGetMidY(frame))
-//        shape.fillColor = UIColor.redColor()
-//        shape.strokeColor = UIColor.blueColor()
-//        shape.lineWidth = 10
-        
+       
         
         addChild(shape)
         
+       
         
+
         //backgroundColor = SKColor.whiteColor()
         
         player.size = CGSize(width: 40.0, height: 40.0)
         player.color = UIColor.greenColor()
-        player.position = CGPointMake(400, 400)
+        
+        
+        player.position = CGPointMake(screenWidth * 0.25, screenHeight * 0.25)
         
         
         addChild(player)
         
         
-        let screenSize : CGRect = UIScreen.mainScreen().bounds
+        touchPadY = shape.frame.size.height
+        touchPadX = shape.frame.size.width
         
-        
-        let centerPadX = screenSize.width * 0.17
-        let centerPadY = screenSize.height * 0.9
         
         marker.size = CGSize(width: 10.0, height: 10.0)
         marker.color = UIColor.blackColor()
-        marker.position = CGPointMake(centerPadX, centerPadY)
+        marker.position = CGPointMake(touchPadX * 0.5, touchPadY * 0.5)
         
         addChild(marker)
         
@@ -73,33 +70,73 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-       
+        touchPadY = shape.frame.size.height
+        touchPadX = shape.frame.size.width
+        
         
         for touch in touches {
-            let location = touch.locationInView(self.view)
+            var location = touch.locationInView(self.view)
             
-            print("Touch : \(location.x), \(location.y)")
+            //print("Touch : \(location.x), \(location.y)")
+            
+            location.y = screenHeight - location.y
+            
+            
+            let v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)
+            
+            //print("Touch : \(Int(location.x)), \(Int(location.y)) Vector : \(Int(location.x - touchPadX * 0.5)), \(Int(location.y - touchPadY * 0.5))")
+            
+            //print("\(location.y) <= \(touchPadY)")
+            
+            if location.x <= touchPadX && location.y <= touchPadY{
+                
+                
+                let projectileAction = SKAction.sequence([
+                    SKAction.repeatAction(
+                        SKAction.moveBy(v, duration: 0.5), count: 1),
+                    SKAction.waitForDuration(0.5),
+                    SKAction.removeFromParent()
+                    ])
+                
+                
+                
+                player.runAction(projectileAction)
+   // print("Inside")
+                print(player.position)
+                
+            }
+            
+            else{
+                
+                player.position = CGPointMake(screenWidth * 0.25, screenHeight * 0.25)
+                player.hidden = false
+                print(player.position)
+                print("moved player back")
+                
+            }
+
         
         }
     }
 
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        
+        touchPadY = shape.frame.size.height
+        touchPadX = shape.frame.size.width
         
         for touch in touches {
-            let location = touch.locationInView(self.view)
-            let screenSize : CGRect = UIScreen.mainScreen().bounds
+            var location = touch.locationInView(self.view)
             
-            let smallX = screenSize.width * 0.34
-            let smallY = screenSize.height * 0.8
+          location.y = screenHeight - location.y
             
-            let centerPadX = screenSize.width * 0.17
-            let centerPadY = screenSize.height * 0.9
             
-            let v = CGVector(dx: location.x - centerPadX, dy: -(location.y - centerPadY))
             
-            if location.x <= smallX && location.y >= smallY{
-                //
+            let v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)
+            
+            if location.x <= touchPadX && location.y >= touchPadY{
+                
+       
+                
+                
             let projectileAction = SKAction.sequence([
                 SKAction.repeatAction(
                     SKAction.moveBy(v, duration: 0.5), count: 1),
