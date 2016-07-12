@@ -294,6 +294,7 @@
 				94B533C21D3427A9003F8801 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

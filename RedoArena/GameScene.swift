@@ -11,7 +11,7 @@ import SpriteKit
 class GameScene: SKScene {
     
     
-    let player = SKSpriteNode()
+let player = SKSpriteNode()
     let marker = SKSpriteNode()
     let screenHeight = UIScreen.mainScreen().bounds.height
     let screenWidth = UIScreen.mainScreen().bounds.width
@@ -21,26 +21,34 @@ class GameScene: SKScene {
 
     var shape = SKShapeNode()
     
+   // var v = CGVector(dx: 0.0, dy: 0.0)
+    var v : CGVector = CGVectorMake(0.0, 0.0)
+   
+   // var v = CGVectorMake(0.0, 0.0)
+    
+    
+ 
+    
+    
+    
+
     override func didMoveToView(view: SKView) {
         /* Setup your scene here */
     
-        // move to init method
+       
+        let physicsBody = SKPhysicsBody (edgeLoopFromRect: self.frame)
+        self.physicsBody = physicsBody
+      
         
         print("\(screenHeight), \(screenWidth)")
-        
-        
         print("\(self.size.width), \(self.size.height)")
+        
         
         shape = SKShapeNode(rect: CGRectMake(0, 0, screenWidth * 0.4, screenHeight * 0.25))
         shape.fillColor = UIColor.redColor()
-
-       
-        
         addChild(shape)
         
        
-        
-
         //backgroundColor = SKColor.whiteColor()
         
         player.size = CGSize(width: 40.0, height: 40.0)
@@ -48,23 +56,29 @@ class GameScene: SKScene {
         
         
         player.position = CGPointMake(screenWidth * 0.25, screenHeight * 0.25)
-        
-        
+        player.physicsBody = SKPhysicsBody(circleOfRadius: 5)
+     
         addChild(player)
         
         
         touchPadY = shape.frame.size.height
         touchPadX = shape.frame.size.width
         
-        
+    
         marker.size = CGSize(width: 10.0, height: 10.0)
         marker.color = UIColor.blackColor()
         marker.position = CGPointMake(touchPadX * 0.5, touchPadY * 0.5)
         
         addChild(marker)
         
-        
-        
+   
+    }
+    
+    
+    override func update(currentTime: CFTimeInterval) {
+       
+        player.physicsBody?.applyImpulse(v)
+       v = CGVectorMake(0.0, 0.0)
         
         
     }
@@ -82,38 +96,41 @@ class GameScene: SKScene {
             location.y = screenHeight - location.y
             
             
-            let v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)
-            
+             v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)
+         
             //print("Touch : \(Int(location.x)), \(Int(location.y)) Vector : \(Int(location.x - touchPadX * 0.5)), \(Int(location.y - touchPadY * 0.5))")
             
             //print("\(location.y) <= \(touchPadY)")
             
-            if location.x <= touchPadX && location.y <= touchPadY{
-                
-                
-                let projectileAction = SKAction.sequence([
-                    SKAction.repeatAction(
-                        SKAction.moveBy(v, duration: 0.5), count: 1),
-                    SKAction.waitForDuration(0.5),
-                    SKAction.removeFromParent()
-                    ])
-                
-                
-                
-                player.runAction(projectileAction)
-   // print("Inside")
-                print(player.position)
-                
-            }
+//            if location.x <= touchPadX && location.y <= touchPadY{
+//                
+//                
+//                let projectileAction = SKAction.sequence([
+//                    SKAction.repeatAction(
+//                        SKAction.moveBy(v, duration: 0.5), count: 1),
+//                    SKAction.waitForDuration(0.5),
+//                    SKAction.removeFromParent()
+//                    ])
+//
+//                
+//                
+//                player.runAction(projectileAction)
+//   // print("Inside")
+//                print(player.position)
             
-            else{
+//                let action = SKAction.sequence(
+//                [player.physicsBody applyImpulse:CGVectorMake(dx,dy)]
                 
-                player.position = CGPointMake(screenWidth * 0.25, screenHeight * 0.25)
-                player.hidden = false
-                print(player.position)
-                print("moved player back")
-                
-            }
+//            }
+//            
+//            else{
+//                
+//                player.position = CGPointMake(screenWidth * 0.25, screenHeight * 0.25)
+//                player.hidden = false
+//                print(player.position)
+//                print("moved player back")
+//                
+//            }
 
         
         }
@@ -130,30 +147,26 @@ class GameScene: SKScene {
             
             
             
-            let v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)
+             v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)
             
-            if location.x <= touchPadX && location.y >= touchPadY{
-                
-       
-                
-                
-            let projectileAction = SKAction.sequence([
-                SKAction.repeatAction(
-                    SKAction.moveBy(v, duration: 0.5), count: 1),
-                SKAction.waitForDuration(0.5),
-                SKAction.removeFromParent()
-                ])
-            
-            
-            
-            player.runAction(projectileAction)
-                
-            }
-//            let angle = atan2(v.dx, v.dy)
+//            if location.x <= touchPadX && location.y >= touchPadY{
+//                
+//       
+//                
+//                
+//            let projectileAction = SKAction.sequence([
+//                SKAction.repeatAction(
+//                    SKAction.moveBy(v, duration: 0.5), count: 1),
+//                SKAction.waitForDuration(0.5),
+//                SKAction.removeFromParent()
+//                ])
 //            
-//            let deg = angle * CGFloat(180 / M_PI)
 //            
-//            print(deg + 180)
+//            
+//            player.runAction(projectileAction)
+//                
+//            }
+
             
             
         }
