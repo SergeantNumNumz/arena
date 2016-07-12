@@ -9,37 +9,118 @@
 import SpriteKit
 
 class GameScene: SKScene {
+    
+    
+    let player = SKSpriteNode()
+    let marker = SKSpriteNode()
+    let screenHeight = UIScreen.mainScreen().bounds.height
+    let screenWidth = UIScreen.mainScreen().bounds.width
+
+    var shape = SKShapeNode()
+    
+    
     override func didMoveToView(view: SKView) {
         /* Setup your scene here */
-        let myLabel = SKLabelNode(fontNamed:"Chalkduster")
-        myLabel.text = "Hello, World!"
-        myLabel.fontSize = 45
-        myLabel.position = CGPoint(x:CGRectGetMidX(self.frame), y:CGRectGetMidY(self.frame))
+    
+        // move to init method
         
-        self.addChild(myLabel)
+        print("\(screenHeight), \(screenWidth)")
+        
+        
+        print("\(self.size.width), \(self.size.height)")
+        
+        shape = SKShapeNode(rect: CGRectMake(self.size.width * 0.2, 0, screenWidth * 0.4, screenHeight * 0.25))
+        shape.fillColor = UIColor.redColor()
+
+        
+     
+//        shape.path = UIBezierPath(roundedRect: CGRect(x: 0, y: screenHeight * 0.75, width: screenWidth * 0.4, height: screenHeight * 0.25), cornerRadius: 64).CGPath
+//        shape.position = CGPoint(x: CGRectGetMidX(frame), y: CGRectGetMidY(frame))
+//        shape.fillColor = UIColor.redColor()
+//        shape.strokeColor = UIColor.blueColor()
+//        shape.lineWidth = 10
+        
+        
+        addChild(shape)
+        
+        
+        //backgroundColor = SKColor.whiteColor()
+        
+        player.size = CGSize(width: 40.0, height: 40.0)
+        player.color = UIColor.greenColor()
+        player.position = CGPointMake(400, 400)
+        
+        
+        addChild(player)
+        
+        
+        let screenSize : CGRect = UIScreen.mainScreen().bounds
+        
+        
+        let centerPadX = screenSize.width * 0.17
+        let centerPadY = screenSize.height * 0.9
+        
+        marker.size = CGSize(width: 10.0, height: 10.0)
+        marker.color = UIColor.blackColor()
+        marker.position = CGPointMake(centerPadX, centerPadY)
+        
+        addChild(marker)
+        
+        
+        
+        
+        
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-       /* Called when a touch begins */
+       
         
         for touch in touches {
-            let location = touch.locationInNode(self)
+            let location = touch.locationInView(self.view)
             
-            let sprite = SKSpriteNode(imageNamed:"Spaceship")
-            
-            sprite.xScale = 0.5
-            sprite.yScale = 0.5
-            sprite.position = location
-            
-            let action = SKAction.rotateByAngle(CGFloat(M_PI), duration:1)
-            
-            sprite.runAction(SKAction.repeatActionForever(action))
-            
-            self.addChild(sprite)
+            print("Touch : \(location.x), \(location.y)")
+        
         }
     }
-   
-    override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        
+        
+        for touch in touches {
+            let location = touch.locationInView(self.view)
+            let screenSize : CGRect = UIScreen.mainScreen().bounds
+            
+            let smallX = screenSize.width * 0.34
+            let smallY = screenSize.height * 0.8
+            
+            let centerPadX = screenSize.width * 0.17
+            let centerPadY = screenSize.height * 0.9
+            
+            let v = CGVector(dx: location.x - centerPadX, dy: -(location.y - centerPadY))
+            
+            if location.x <= smallX && location.y >= smallY{
+                //
+            let projectileAction = SKAction.sequence([
+                SKAction.repeatAction(
+                    SKAction.moveBy(v, duration: 0.5), count: 1),
+                SKAction.waitForDuration(0.5),
+                SKAction.removeFromParent()
+                ])
+            
+            
+            
+            player.runAction(projectileAction)
+                
+            }
+//            let angle = atan2(v.dx, v.dy)
+//            
+//            let deg = angle * CGFloat(180 / M_PI)
+//            
+//            print(deg + 180)
+            
+            
+        }
     }
+    
 }
+

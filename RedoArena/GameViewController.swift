@@ -30,24 +30,37 @@ class GameViewController: UIViewController {
         }
     }
 
-    override func shouldAutorotate() -> Bool {
-        return true
-    }
+   
+    
+    
+    
+//    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+//        for touch in touches {
+//            let location = touch.locationInView(self.view)
+//            
+//            let screenSize : CGRect = UIScreen.mainScreen().bounds
+//            
+//            let smallX = screenSize.width * 0.34
+//            let smallY = screenSize.height * 0.8
+//            
+//            let centerPadX = screenSize.width * 0.17
+//            let centerPadY = screenSize.height * 0.9
+//            
+//            //print("C : \(smallX) \(smallY) \(centerPadX) \(centerPadY) \(location.x) \(location.y)")
+//            
+//            //print("Controller : \(centerPadX) - \(location.x)")
+//            if location.x <= smallX && location.y >= smallY{
+//                
+//                //let vector = CGVectorMake(-(centerPadX - location.x), -(centerPadY-location.y))
+//                              
+//            }
+//            
+//            
+//            
+//        }
+//        
+//    }
 
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return .AllButUpsideDown
-        } else {
-            return .All
-        }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-    }
-
-    override func prefersStatusBarHidden() -> Bool {
-        return true
-    }
+    
+    
 }
