@@ -8,12 +8,14 @@
 
 import SpriteKit
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
     //MARK: SKSpriteNodes
     let player = SKSpriteNode()
     let marker = SKSpriteNode()
-    var explosionObject = SKSpriteNode()
+    //var bullet = SKSpriteNode()
+    var swordEnemy = SKSpriteNode()
+    let enemy = SKSpriteNode()
     
         //Controls
         var attackButton = SKShapeNode()
@@ -28,21 +30,37 @@ class GameScene: SKScene {
     var playerSpeed : CGFloat = 200
     var playerAngle : CGFloat = 0
     var speedMultiplier : CGFloat = 2
+    var enemyMaxSpeed : UInt32 = 300
+    var enemyMinSpeed : UInt32 = 200
     
-        //Vectors and Positions
+    var enemyShootPercent : Int = 25
+    var enemyMoveToPlayerPercent : Int = 25
+    //var enemyRandomDirectionPercent : Int = 100
+
+   
+    
+        //Vectors and Positions®
         var touchPadX : CGFloat = 0.0
         var touchPadY : CGFloat = 0.0
         var v : CGVector = CGVectorMake(0.0, 0.0)
         var lastV : CGVector = CGVectorMake(0.0, 0.0)
+        var vectorToPlayer : CGVector = CGVectorMake(0.0, 0.0)
     
         //Base Variables
         let screenHeight = UIScreen.mainScreen().bounds.height
         let screenWidth = UIScreen.mainScreen().bounds.width
     
         //Base Bools
-        var attacked = false
-        var finishedAttack = true
-        var madeExplosion = false
+        var attacking = false
+        var enemyAttacking = false
+        var playerShot = false
+        var madeEnemySword = false
+        var enemyBusy = false
+        var enemyCanAttack = true
+    
+    
+    
+    
     
   
 override func didMoveToView(view: SKView) {
@@ -51,6 +69,8 @@ override func didMoveToView(view: SKView) {
         let physicsBody = SKPhysicsBody (edgeLoopFromRect: self.frame)
         self.physicsWorld.gravity = CGVectorMake(0, 0)
         self.physicsBody = physicsBody
+        self.physicsBody?.categoryBitMask = Type.Border
+        self.physicsWorld.contactDelegate = self
     
     
     /* Setup White Backround */
@@ -58,7 +78,9 @@ override func didMoveToView(view: SKView) {
         whiteBackround.fillColor = UIColor.whiteColor()
         whiteBackround.physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRectMake(0.0, 0.0, screenWidth, screenHeight * 0.28))
         whiteBackround.physicsBody?.dynamic = false
-    
+        whiteBackround.physicsBody?.categoryBitMask = Type.Border
+        whiteBackround.physicsBody?.usesPreciseCollisionDetection = true
+
         addChild(whiteBackround)
     
     
@@ -93,12 +115,37 @@ override func didMoveToView(view: SKView) {
     
     
     /* Setup Player Object */
-        player.size = CGSize(width: 40.0, height: 40.0)
+        player.size = CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1)
         player.color = UIColor.blackColor()
-        player.position = CGPointMake(screenWidth * 0.5, screenHeight * 0.75)
-        player.physicsBody = SKPhysicsBody(circleOfRadius: 5)
+        player.position = CGPointMake(screenWidth * 0.15, screenHeight * 0.64)
+        player.physicsBody = SKPhysicsBody(rectangleOfSize: CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1))
+        player.physicsBody?.usesPreciseCollisionDetection = true
+        player.physicsBody?.categoryBitMask = Type.Player
+        player.physicsBody?.contactTestBitMask = Type.Enemy
+        player.physicsBody?.contactTestBitMask = Type.Border
+
         
         addChild(player)
+    
+    
+    /* Setup Enemy Object */
+        enemy.size = CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1)
+        enemy.color = UIColor.redColor()
+        enemy.position = CGPointMake(screenWidth * 0.85, screenHeight * 0.64)
+        enemy.physicsBody = SKPhysicsBody(rectangleOfSize: CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1))
+        enemy.physicsBody?.usesPreciseCollisionDetection = true
+        enemy.physicsBody?.categoryBitMask = Type.Enemy
+        enemy.physicsBody?.contactTestBitMask = Type.Bullet
+        enemy.physicsBody?.contactTestBitMask = Type.Border
+    
+    
+        addChild(enemy)
+    
+    
+    
+
+    
+
     
     
     
@@ -116,36 +163,63 @@ override func didMoveToView(view: SKView) {
     
 override func update(currentTime: CFTimeInterval) {
     
+    vectorToPlayer = CGVectorMake(player.position.x - enemy.position.x, player.position.y - enemy.position.y)   //Set Vector to player and player angle
+    let magnitude = sqrt(vectorToPlayer.dx * vectorToPlayer.dx + vectorToPlayer.dy * vectorToPlayer.dy)
+    vectorToPlayer = CGVectorMake(vectorToPlayer.dx/magnitude, vectorToPlayer.dy/magnitude)
+    playerAngle = atan2(vectorToPlayer.dy, vectorToPlayer.dx)
+    
+    
+
     resetAngle()
     
     
-/* Update Child Positions */
-    if madeExplosion == true  {
-    //explosionObject.position = CGPointMake(player.position.x + lastV.dx * 30, player.position.y + lastV.dy * 30)
-        //explosionObject.zRotation = playerAngle
+    if enemyBusy == false {
+        enemy.zRotation = playerAngle                                                                         //Set angle and Zero Angular Velocity
+        enemy.physicsBody?.angularVelocity = (0.0)
+       enemyChooseAction()
+        enemyBusy = true
+        
+    }
+        
+        
+    else {
+        
+        let currentEnemyAngle = atan2((enemy.physicsBody?.velocity.dy)!, (enemy.physicsBody?.velocity.dx)!)
+
+        enemy.zRotation = currentEnemyAngle
+        
     }
     
-/* Attack Function */
-    if (attacked == true && finishedAttack == true) {
-        
-        let bleh = CGVectorMake(lastV.dx * 1500 + v.dx * 150, lastV.dy * 1500 + v.dy * 150)
-        player.physicsBody?.velocity = (bleh)
-
-        finishedAttack = false
-        attack()
-          
-        }
-
-/* Else Constant Movement */
-    else if (attacked == false && finishedAttack == true) {
-            
-      player.physicsBody?.velocity = (CGVectorMake(v.dx * playerSpeed, v.dy * playerSpeed))
-            
-    }
+   
+//player.physicsBody?.applyImpulse(CGVectorMake(lastV.dx * 100, lastV.dy * 100))
        
+
+    
+      player.physicsBody?.velocity = (CGVectorMake(v.dx * playerSpeed, v.dy * playerSpeed))
+            //checkCollisions()
+   
     
 }
  
+    
+    
+    
+//    
+//func checkCollisions()
+//{
+//    
+//    if CGRectIntersectsRect(player.frame, rect2: CGRect)
+//    
+//    
+//    
+//    }
+    
+    
+    
+    
+    
+    
+    
     
 /* Reset Vector on Touch End */
 override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -191,7 +265,7 @@ override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
     /* Else If Within Attack Button */
         else if CGRectContainsPoint(attackButton.frame, location)   {
            
-            attacked = true
+            attack()
             
         }
 
@@ -226,11 +300,14 @@ override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
            
             
     /* Else If Within Large Touchpad */
+        // TODO: At top corner, face down and lunge. Error thrown super glitch go. Go into corner. Tap outside in direction facing the enemy. Then hit lunge
         else if CGRectContainsPoint(touchPadLarge.frame, location)  {
                 
             v = CGVector(dx: location.x - touchPadX * 0.5, dy: location.y - touchPadY * 0.5)                    //Set, Normalize, and Save Vector
             let magnitude = sqrt(v.dx * v.dx + v.dy * v.dy)
             v = CGVectorMake(v.dx/magnitude, v.dy/magnitude)
+           
+           
             lastV = v
             v = CGVectorMake(v.dx * speedMultiplier, v.dy * speedMultiplier)                                    //Scale Up Vector
             
@@ -247,19 +324,26 @@ override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
 
 /* Attack Function */
 func attack(){
+    
+    if attacking == false {
+        attacking = true
+      
         
-    self.explosion()                                                                                            //Call Explosion
-
-        
-    let delay = 0.05 * Double(NSEC_PER_SEC)                                                                     //Delay
-    let time = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
-    dispatch_after(time, dispatch_get_main_queue()) {
+        /* Setup Player Bullets */
+        let vector = scaleVector(lastV, multiplier: 300)
+        let bullet = BulletSprite(player: player, vector: lastV, velocity: vector)
         
         
-        self.attacked = false                                                                                       //Attacked false, finished attack true
-        self.finishedAttack = true
+        addChild(bullet)
+        bullet.physicsBody?.categoryBitMask = Type.Bullet
+       
+//        print(scaleVector(lastV, multiplier: 300))
         
+        resetPlayerAttack(0.2)
+        
+   
     }
+  
 }
     
     
@@ -273,7 +357,7 @@ func resetAngle(){
 /* If Not Moving */
     if (currentSpeed > 0.01) {
         
-        player.zRotation = playerAngle                                                                             //Set angle and Zero Angular Velocity
+        player.zRotation = playerAngle                                                                         //Set angle and Zero Angular Velocity
         player.physicsBody?.angularVelocity = (0.0)
         
     }
@@ -281,33 +365,229 @@ func resetAngle(){
     
 }
  
-    
- 
-/* Explosion */
-func explosion(){                                                                                                   //TODO:  sword child of player
-        
-        
-    explosionObject = SKSpriteNode()
-    explosionObject.size = CGSize(width: screenWidth * 0.05, height: screenWidth * 0.2)                             //Setup Exposion
-    explosionObject.color = UIColor.redColor()
-//    explosionObject.position = CGPointMake(lastV.dx * 12, lastV.dy * 12)
-    explosionObject.position = CGPointMake(player.frame.width, 0)
 
-  
-        
-    addChild(explosionObject)
-    explosionObject.moveToParent(player)
-    madeExplosion = true
     
-    let delay = 0.1 * Double(NSEC_PER_SEC)                                                                            //Delay
+
+    
+    
+    
+/* Enemy Choose Action */
+func enemyChooseAction(){
+
+
+    
+/* Player Shoot Override */
+if playerShot == false {
+    
+    
+    let na = Int(arc4random_uniform(100) + 1)
+    let a = enemyShootPercent                                                       //Setup probabilities
+    let b = enemyMoveToPlayerPercent + enemyShootPercent
+    
+    
+    
+    
+/* A */
+    switch na {
+        
+/*1*/   case 1...a :
+           
+            enemyShoot(vectorToPlayer)
+            resetEnemyBusy(0.3)
+            enemy.color = UIColor.greenColor()
+            
+/*1*/       break
+        
+        
+/*2*/   case a + 1...b :
+            //print("Moved to Player")
+            enemy.physicsBody?.velocity = scaleVector(vectorToPlayer, multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+            resetEnemyBusy(1)
+            
+/*2*/       break
+        
+        
+/*3*/   case b + 1...100 :
+            //print("Random Direction")
+            let nb = Int(arc4random_uniform(2) + 1)
+            
+            switch nb
+            {
+                
+                case 1 :
+                    
+                    enemy.physicsBody?.velocity = scaleVector(CGVectorMake(-vectorToPlayer.dy, vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+                    resetEnemyBusy(0.3)
+                    
+                    break
+                
+                case 2 :
+                
+                    enemy.physicsBody?.velocity = scaleVector(CGVectorMake(vectorToPlayer.dy, -vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+                    resetEnemyBusy(0.3)
+                
+                    break
+                
+                default:
+                    break
+                
+            }
+    
+/*3*/       break
+        
+        
+        default:
+        break
+        
+}
+
+} //Player shot check
+    
+}
+    
+
+    
+    
+    
+func resetPlayerAttack(time : Double){
+        
+        let delay = time * Double(NSEC_PER_SEC)
+        let beh = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
+        dispatch_after(beh, dispatch_get_main_queue()) {
+            
+            self.attacking = false
+            
+        }
+        
+}
+    
+    
+func enemyShoot(vector : CGVector){
+    
+    
+    
+    
+    /* Setup Player Bullets */
+    
+    let vectora = scaleVector(vector, multiplier: 300)
+    let bullet = EnemyBulletSprite(enemy: enemy, vector: vectorToPlayer, velocity: vectora)
+   
+    
+    addChild(bullet)
+    bullet.physicsBody?.categoryBitMask = Type.EnemyBullet
+
+    
+    
+    let delay = 0.1 * Double(NSEC_PER_SEC)
     let time = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
     dispatch_after(time, dispatch_get_main_queue()) {
-        
-        self.explosionObject.removeFromParent()                                                                     //Delete Explosion
-        self.madeExplosion = false
-            
+    
+        self.enemy.color = UIColor.redColor()
+    
     }
-
 }
+    
+    
+
+/* Scale Vector */
+func scaleVector(var vector : CGVector, multiplier : CGFloat) -> CGVector{
+        
+    vector = CGVectorMake(vector.dx * multiplier, vector.dy * multiplier)
+    
+      return vector
+}
+    
+
+
+
+    
+/* Function to Reset EnemyBusy after a Delay */
+func resetEnemyBusy(time : Double){
+        
+    let delay = time * Double(NSEC_PER_SEC)
+    let beh = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
+    dispatch_after(beh, dispatch_get_main_queue()) {
+        
+        self.enemyBusy = false
+        
+    }
+        
+}
+    
+    
+     func didBeginContact(contact: SKPhysicsContact) {
+        
+        let bodyA = contact.bodyA
+        let bodyB = contact.bodyB
+        
+        let contactA = bodyA.categoryBitMask
+        let contactB = bodyB.categoryBitMask
+        
+        //print("bodyA : \(contactA), bodyB : \(contactB)")
+        
+        switch contactA{
+            
+            
+        case Type.Player:
+            
+            if contactB == Type.EnemyBullet
+            {
+                bodyA.node?.removeFromParent()
+                print("Player hit enemy bullet, killed player")
+                
+            }
+          
+            break
+            
+        case Type.EnemyBullet:
+            
+            if contactB == Type.Player
+            {
+                bodyA.node?.removeFromParent()
+                print("Enemy bullet hit player, killed bullet")
+                
+            }
+                
+            else if contactB == Type.Border
+            {
+                bodyA.node?.removeFromParent()
+                print("Enemy bullet hit border, killed bullet")
+            }
+            break
+            
+        case Type.Bullet:
+            
+            if contactB == Type.Enemy
+            {
+                bodyA.node?.removeFromParent()
+                print("Bullet hit enemy killed bullet")
+                
+            }
+                
+            else if contactB == Type.Border
+            {
+                bodyA.node?.removeFromParent()
+                print("Bullet hit border, killed ubllet")
+            }
+            break
+            
+        case Type.Enemy:
+            
+            if contactB == Type.Bullet
+            {
+                bodyA.node?.removeFromParent()
+                print("Enemy hit bullet, killed enemy")
+            }
+            break
+            
+        default:
+            break
+        }
+    }
+   
+
+    
+    
+  
 
 }

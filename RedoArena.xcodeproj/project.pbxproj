@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9409FFBF1D3814E500D10E06 /* BulletSprite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409FFBE1D3814E500D10E06 /* BulletSprite.swift */; };
+		9409FFC11D38153A00D10E06 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9409FFC01D38153A00D10E06 /* SpriteKit.framework */; };
+		9409FFC31D38170D00D10E06 /* Type.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409FFC21D38170D00D10E06 /* Type.swift */; };
+		9409FFC51D381FED00D10E06 /* EnemyBulletSprite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9409FFC41D381FED00D10E06 /* EnemyBulletSprite.swift */; };
 		94B533AE1D3427A9003F8801 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B533AD1D3427A9003F8801 /* AppDelegate.swift */; };
 		94B533B01D3427A9003F8801 /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 94B533AF1D3427A9003F8801 /* GameScene.sks */; };
 		94B533B21D3427A9003F8801 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94B533B11D3427A9003F8801 /* GameScene.swift */; };
@@ -17,6 +21,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9409FFBE1D3814E500D10E06 /* BulletSprite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BulletSprite.swift; sourceTree = "<group>"; };
+		9409FFC01D38153A00D10E06 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
+		9409FFC21D38170D00D10E06 /* Type.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Type.swift; sourceTree = "<group>"; };
+		9409FFC41D381FED00D10E06 /* EnemyBulletSprite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnemyBulletSprite.swift; sourceTree = "<group>"; };
 		94B533AA1D3427A9003F8801 /* RedoArena.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RedoArena.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		94B533AD1D3427A9003F8801 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		94B533AF1D3427A9003F8801 /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -33,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9409FFC11D38153A00D10E06 /* SpriteKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +51,7 @@
 		94B533A11D3427A9003F8801 = {
 			isa = PBXGroup;
 			children = (
+				9409FFC01D38153A00D10E06 /* SpriteKit.framework */,
 				94B533AC1D3427A9003F8801 /* RedoArena */,
 				94B533AB1D3427A9003F8801 /* Products */,
 			);
@@ -61,6 +71,9 @@
 				94B533AD1D3427A9003F8801 /* AppDelegate.swift */,
 				94B533AF1D3427A9003F8801 /* GameScene.sks */,
 				94B533B11D3427A9003F8801 /* GameScene.swift */,
+				9409FFC21D38170D00D10E06 /* Type.swift */,
+				9409FFBE1D3814E500D10E06 /* BulletSprite.swift */,
+				9409FFC41D381FED00D10E06 /* EnemyBulletSprite.swift */,
 				94B533B51D3427A9003F8801 /* Main.storyboard */,
 				94B533B31D3427A9003F8801 /* GameViewController.swift */,
 				94B533B81D3427A9003F8801 /* Assets.xcassets */,
@@ -142,9 +155,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9409FFC31D38170D00D10E06 /* Type.swift in Sources */,
+				9409FFBF1D3814E500D10E06 /* BulletSprite.swift in Sources */,
 				94B533B21D3427A9003F8801 /* GameScene.swift in Sources */,
 				94B533B41D3427A9003F8801 /* GameViewController.swift in Sources */,
 				94B533AE1D3427A9003F8801 /* AppDelegate.swift in Sources */,
+				9409FFC51D381FED00D10E06 /* EnemyBulletSprite.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
