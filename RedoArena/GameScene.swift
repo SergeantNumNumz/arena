@@ -13,7 +13,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //MARK: SKSpriteNodes
     let player = SKSpriteNode()
     let marker = SKSpriteNode()
-    //var bullet = SKSpriteNode()
     var swordEnemy = SKSpriteNode()
     let enemy = SKSpriteNode()
     
@@ -33,8 +32,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var enemyMaxSpeed : UInt32 = 300
     var enemyMinSpeed : UInt32 = 200
     
-    var enemyShootPercent : Int = 25
-    var enemyMoveToPlayerPercent : Int = 25
+    var enemyShootPercent : Int = 40
+    var enemyMoveToPlayerPercent : Int = 20
     //var enemyRandomDirectionPercent : Int = 100
 
    
@@ -137,6 +136,7 @@ override func didMoveToView(view: SKView) {
         enemy.physicsBody?.categoryBitMask = Type.Enemy
         enemy.physicsBody?.contactTestBitMask = Type.Bullet
         enemy.physicsBody?.contactTestBitMask = Type.Border
+        enemy.physicsBody?.contactTestBitMask = Type.EnemyBullet
     
     
         addChild(enemy)
@@ -167,6 +167,7 @@ override func update(currentTime: CFTimeInterval) {
     let magnitude = sqrt(vectorToPlayer.dx * vectorToPlayer.dx + vectorToPlayer.dy * vectorToPlayer.dy)
     vectorToPlayer = CGVectorMake(vectorToPlayer.dx/magnitude, vectorToPlayer.dy/magnitude)
     playerAngle = atan2(vectorToPlayer.dy, vectorToPlayer.dx)
+    
     
     
 
@@ -391,7 +392,8 @@ if playerShot == false {
     switch na {
         
 /*1*/   case 1...a :
-           
+    
+        vectorToPlayer = editRandomly(vectorToPlayer)
             enemyShoot(vectorToPlayer)
             resetEnemyBusy(0.3)
             enemy.color = UIColor.greenColor()
@@ -401,8 +403,8 @@ if playerShot == false {
         
 /*2*/   case a + 1...b :
             //print("Moved to Player")
-            enemy.physicsBody?.velocity = scaleVector(vectorToPlayer, multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
-            resetEnemyBusy(1)
+            //enemy.physicsBody?.velocity = scaleVector(vectorToPlayer, multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+            resetEnemyBusy(0.7)
             
 /*2*/       break
         
@@ -416,14 +418,14 @@ if playerShot == false {
                 
                 case 1 :
                     
-                    enemy.physicsBody?.velocity = scaleVector(CGVectorMake(-vectorToPlayer.dy, vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+                   // enemy.physicsBody?.velocity = scaleVector(CGVectorMake(-vectorToPlayer.dy, vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
                     resetEnemyBusy(0.3)
                     
                     break
                 
                 case 2 :
                 
-                    enemy.physicsBody?.velocity = scaleVector(CGVectorMake(vectorToPlayer.dy, -vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+                    //enemy.physicsBody?.velocity = scaleVector(CGVectorMake(vectorToPlayer.dy, -vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
                     resetEnemyBusy(0.3)
                 
                     break
@@ -458,6 +460,8 @@ func resetPlayerAttack(time : Double){
             self.attacking = false
             
         }
+    
+    
         
 }
     
@@ -488,7 +492,9 @@ func enemyShoot(vector : CGVector){
 }
     
     
-
+//TODO: Horizontal random doesn't work because x is increased but the y value is zero becauese its horizontal. The x is randomly increased but y remains zero therefore the angle is the same
+    
+    
 /* Scale Vector */
 func scaleVector(var vector : CGVector, multiplier : CGFloat) -> CGVector{
         
@@ -497,7 +503,34 @@ func scaleVector(var vector : CGVector, multiplier : CGFloat) -> CGVector{
       return vector
 }
     
+    func editRandomly(vector: CGVector) -> CGVector{
+        
+        
+        let n = arc4random_uniform(2) + 1
+        
+        let division = CGFloat(Double(arc4random_uniform(4)) * 0.1)
+        
+        switch n {
+            
+        case 1 :
+            
+            return CGVectorMake(vector.dx + vector.dx*division, vector.dy - vector.dy*division)
+            
+         
+        case 2 :
+            
+            return CGVectorMake(vector.dx - vector.dx*division, vector.dy + vector.dy*division)
+            
+            
+            
+        default :
+            break
+        }
+        
+        
+        return         vector
 
+    }
 
 
     
@@ -528,16 +561,6 @@ func resetEnemyBusy(time : Double){
         switch contactA{
             
             
-        case Type.Player:
-            
-            if contactB == Type.EnemyBullet
-            {
-                bodyA.node?.removeFromParent()
-                print("Player hit enemy bullet, killed player")
-                
-            }
-          
-            break
             
         case Type.EnemyBullet:
             
@@ -547,6 +570,8 @@ func resetEnemyBusy(time : Double){
                 print("Enemy bullet hit player, killed bullet")
                 
             }
+              
+        
                 
             else if contactB == Type.Border
             {
@@ -560,7 +585,7 @@ func resetEnemyBusy(time : Double){
             if contactB == Type.Enemy
             {
                 bodyA.node?.removeFromParent()
-                print("Bullet hit enemy killed bullet")
+               // print("Bullet hit enemy killed bullet")
                 
             }
                 
@@ -571,14 +596,7 @@ func resetEnemyBusy(time : Double){
             }
             break
             
-        case Type.Enemy:
-            
-            if contactB == Type.Bullet
-            {
-                bodyA.node?.removeFromParent()
-                print("Enemy hit bullet, killed enemy")
-            }
-            break
+        
             
         default:
             break

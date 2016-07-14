@@ -17,6 +17,7 @@ class BulletSprite: SKSpriteNode {
     }
     
     init(player: SKSpriteNode, vector: CGVector, velocity: CGVector) {
+        
         let screenWidth = UIScreen.mainScreen().bounds.width
         super.init(texture: nil, color: UIColor.redColor(), size: CGSize(width: screenWidth * 0.03, height: screenWidth * 0.03) )
         self.physicsBody?.usesPreciseCollisionDetection = true
