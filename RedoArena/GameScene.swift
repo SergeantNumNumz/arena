@@ -16,11 +16,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var swordEnemy = SKSpriteNode()
     let enemy = SKSpriteNode()
     
+    
         //Controls
         var attackButton = SKShapeNode()
         var touchPadLarge = SKShapeNode()
         var touchPadSmall = SKShapeNode()
         var whiteBackround = SKShapeNode()
+        var healthBarBack = SKShapeNode()
+        var healthBar = SKSpriteNode()
+        var enemyHealthBarBack = SKShapeNode()
+        var enemyHealthBar = SKSpriteNode()
     
     
     
@@ -29,11 +34,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var playerSpeed : CGFloat = 200
     var playerAngle : CGFloat = 0
     var speedMultiplier : CGFloat = 2
-    var enemyMaxSpeed : UInt32 = 300
+    var enemyMaxSpeed : UInt32 = 400
     var enemyMinSpeed : UInt32 = 200
+    var bulletSpeed : CGFloat = 350
     
-    var enemyShootPercent : Int = 40
-    var enemyMoveToPlayerPercent : Int = 20
+    var health : CGFloat = 0.1
+    var enemyHealth : CGFloat = 0.1
+    
+    var enemyShootPercent : Int = 50
+    var enemyMoveToPlayerPercent : Int = 15
     //var enemyRandomDirectionPercent : Int = 100
 
    
@@ -69,24 +78,36 @@ override func didMoveToView(view: SKView) {
         self.physicsWorld.gravity = CGVectorMake(0, 0)
         self.physicsBody = physicsBody
         self.physicsBody?.categoryBitMask = Type.Border
+        self.physicsBody?.contactTestBitMask = Type.EnemyBullet
+        self.physicsBody?.contactTestBitMask = Type.Player
         self.physicsWorld.contactDelegate = self
+    self.backgroundColor = UIColor.lightGrayColor()
     
     
     /* Setup White Backround */
         whiteBackround = SKShapeNode(rect: CGRectMake(0, 0, screenWidth, screenHeight * 0.28))
         whiteBackround.fillColor = UIColor.whiteColor()
-        whiteBackround.physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRectMake(0.0, 0.0, screenWidth, screenHeight * 0.28))
-        whiteBackround.physicsBody?.dynamic = false
+    
+    
+    whiteBackround.physicsBody = SKPhysicsBody(edgeLoopFromRect: whiteBackround.frame)
+    
+    
+        //whiteBackround.physicsBody?.dynamic = false
         whiteBackround.physicsBody?.categoryBitMask = Type.Border
+        whiteBackround.physicsBody?.contactTestBitMask = Type.EnemyBullet
         whiteBackround.physicsBody?.usesPreciseCollisionDetection = true
-
+    
+    
+    
         addChild(whiteBackround)
     
     
     
+    
+    
     /* Setup Attack Button */
-        attackButton = SKShapeNode(circleOfRadius: screenWidth * 0.07)
-        attackButton.position = CGPointMake(screenWidth * 0.55, screenHeight * 0.07)
+        attackButton = SKShapeNode(circleOfRadius: screenWidth * 0.1)
+        attackButton.position = CGPointMake(screenWidth * 0.75, screenHeight * 0.1)
         attackButton.fillColor = UIColor.grayColor()
     
         addChild(attackButton)
@@ -112,6 +133,9 @@ override func didMoveToView(view: SKView) {
         addChild(touchPadSmall)
     
     
+
+    
+    
     
     /* Setup Player Object */
         player.size = CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1)
@@ -120,12 +144,63 @@ override func didMoveToView(view: SKView) {
         player.physicsBody = SKPhysicsBody(rectangleOfSize: CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1))
         player.physicsBody?.usesPreciseCollisionDetection = true
         player.physicsBody?.categoryBitMask = Type.Player
-        player.physicsBody?.contactTestBitMask = Type.Enemy
+        player.physicsBody?.contactTestBitMask = Type.EnemyBullet
         player.physicsBody?.contactTestBitMask = Type.Border
 
+        player.zPosition = 1
         
         addChild(player)
     
+    
+    /* Setup HealthBar  */
+    
+    healthBarBack = SKShapeNode(rect: CGRectMake(0, 0, screenWidth * 0.1, screenHeight * 0.01))
+
+    
+    
+    healthBarBack.zPosition = 5
+  
+    healthBarBack.fillColor = UIColor.grayColor()
+    
+    addChild(healthBarBack)
+    
+    
+    
+    
+    
+    healthBar = SKSpriteNode()
+    healthBar.size = CGSizeMake(screenWidth * 0.1, screenHeight * 0.01)
+    healthBar.anchorPoint = CGPointMake(0, 0)
+    healthBar.zPosition = 6
+    
+    healthBar.color = UIColor.greenColor()
+    
+    addChild(healthBar)
+    
+    /* Setup Enemy HealthBar  */
+    
+    enemyHealthBarBack = SKShapeNode(rect: CGRectMake(0, 0, screenWidth * 0.1, screenHeight * 0.01))
+    
+    
+    
+    enemyHealthBarBack.zPosition = 5
+    
+    enemyHealthBarBack.fillColor = UIColor.grayColor()
+    
+    addChild(enemyHealthBarBack)
+    
+    
+    
+    
+    
+    enemyHealthBar = SKSpriteNode()
+    enemyHealthBar.size = CGSizeMake(screenWidth * 0.1, screenHeight * 0.01)
+    enemyHealthBar.anchorPoint = CGPointMake(0, 0)
+    enemyHealthBar.zPosition = 6
+    
+    enemyHealthBar.color = UIColor.greenColor()
+    
+    addChild(enemyHealthBar)
     
     /* Setup Enemy Object */
         enemy.size = CGSize(width: screenWidth * 0.1, height: screenWidth * 0.1)
@@ -136,7 +211,7 @@ override func didMoveToView(view: SKView) {
         enemy.physicsBody?.categoryBitMask = Type.Enemy
         enemy.physicsBody?.contactTestBitMask = Type.Bullet
         enemy.physicsBody?.contactTestBitMask = Type.Border
-        enemy.physicsBody?.contactTestBitMask = Type.EnemyBullet
+  
     
     
         addChild(enemy)
@@ -162,6 +237,43 @@ override func didMoveToView(view: SKView) {
   
     
 override func update(currentTime: CFTimeInterval) {
+    
+    
+    /* HealthBar Updates */
+    healthBarBack.position = CGPointMake(player.position.x - screenWidth * 0.05, player.position.y)
+    
+    
+    //healthBar.position = CGPointMake(player.position.x, player.position.y)
+    healthBar.position = healthBarBack.position
+  healthBar.size = CGSizeMake(screenWidth * health, healthBar.frame.height)
+
+
+
+    
+    if health <= 0{
+        
+        reloadScene()
+    }
+  
+    
+    
+    
+    /* HealthBar Updates */
+    enemyHealthBarBack.position = CGPointMake(enemy.position.x - screenWidth * 0.05, enemy.position.y)
+    
+    
+    //healthBar.position = CGPointMake(player.position.x, player.position.y)
+    enemyHealthBar.position = enemyHealthBarBack.position
+    enemyHealthBar.size = CGSizeMake(screenWidth * enemyHealth, enemyHealthBar.frame.height)
+    
+    
+    
+    
+    if enemyHealth <= 0{
+        
+        reloadScene()
+    }
+    
     
     vectorToPlayer = CGVectorMake(player.position.x - enemy.position.x, player.position.y - enemy.position.y)   //Set Vector to player and player angle
     let magnitude = sqrt(vectorToPlayer.dx * vectorToPlayer.dx + vectorToPlayer.dy * vectorToPlayer.dy)
@@ -190,32 +302,17 @@ override func update(currentTime: CFTimeInterval) {
         enemy.zRotation = currentEnemyAngle
         
     }
-    
-   
-//player.physicsBody?.applyImpulse(CGVectorMake(lastV.dx * 100, lastV.dy * 100))
-       
 
     
       player.physicsBody?.velocity = (CGVectorMake(v.dx * playerSpeed, v.dy * playerSpeed))
-            //checkCollisions()
-   
     
+   
 }
  
     
     
     
-//    
-//func checkCollisions()
-//{
-//    
-//    if CGRectIntersectsRect(player.frame, rect2: CGRect)
-//    
-//    
-//    
-//    }
-    
-    
+
     
     
     
@@ -331,13 +428,12 @@ func attack(){
       
         
         /* Setup Player Bullets */
-        let vector = scaleVector(lastV, multiplier: 300)
+        let vector = scaleVector(lastV, multiplier: bulletSpeed)
         let bullet = BulletSprite(player: player, vector: lastV, velocity: vector)
         
         
         addChild(bullet)
-        bullet.physicsBody?.categoryBitMask = Type.Bullet
-       
+        
 //        print(scaleVector(lastV, multiplier: 300))
         
         resetPlayerAttack(0.2)
@@ -396,14 +492,14 @@ if playerShot == false {
         vectorToPlayer = editRandomly(vectorToPlayer)
             enemyShoot(vectorToPlayer)
             resetEnemyBusy(0.3)
-            enemy.color = UIColor.greenColor()
+        
             
 /*1*/       break
         
         
 /*2*/   case a + 1...b :
             //print("Moved to Player")
-            //enemy.physicsBody?.velocity = scaleVector(vectorToPlayer, multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+            enemy.physicsBody?.velocity = scaleVector(vectorToPlayer, multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
             resetEnemyBusy(0.7)
             
 /*2*/       break
@@ -418,14 +514,14 @@ if playerShot == false {
                 
                 case 1 :
                     
-                   // enemy.physicsBody?.velocity = scaleVector(CGVectorMake(-vectorToPlayer.dy, vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+                    enemy.physicsBody?.velocity = scaleVector(CGVectorMake(-vectorToPlayer.dy, vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
                     resetEnemyBusy(0.3)
                     
                     break
                 
                 case 2 :
                 
-                    //enemy.physicsBody?.velocity = scaleVector(CGVectorMake(vectorToPlayer.dy, -vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
+                    enemy.physicsBody?.velocity = scaleVector(CGVectorMake(vectorToPlayer.dy, -vectorToPlayer.dx), multiplier: CGFloat(arc4random_uniform(enemyMaxSpeed - enemyMinSpeed) + enemyMinSpeed))
                     resetEnemyBusy(0.3)
                 
                     break
@@ -473,22 +569,14 @@ func enemyShoot(vector : CGVector){
     
     /* Setup Player Bullets */
     
-    let vectora = scaleVector(vector, multiplier: 300)
+    let vectora = scaleVector(vector, multiplier: bulletSpeed)
     let bullet = EnemyBulletSprite(enemy: enemy, vector: vectorToPlayer, velocity: vectora)
    
     
     addChild(bullet)
-    bullet.physicsBody?.categoryBitMask = Type.EnemyBullet
+  
 
-    
-    
-    let delay = 0.1 * Double(NSEC_PER_SEC)
-    let time = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
-    dispatch_after(time, dispatch_get_main_queue()) {
-    
-        self.enemy.color = UIColor.redColor()
-    
-    }
+
 }
     
     
@@ -556,7 +644,11 @@ func resetEnemyBusy(time : Double){
         let contactA = bodyA.categoryBitMask
         let contactB = bodyB.categoryBitMask
         
-        //print("bodyA : \(contactA), bodyB : \(contactB)")
+        
+//        if contactB != Type.Player{
+//        print("bodyA : \(contactA), bodyB : \(contactB)")
+//        }
+        
         
         switch contactA{
             
@@ -564,39 +656,103 @@ func resetEnemyBusy(time : Double){
             
         case Type.EnemyBullet:
             
-            if contactB == Type.Player
-            {
-                bodyA.node?.removeFromParent()
-                print("Enemy bullet hit player, killed bullet")
+            
+            
+                if contactB == Type.Player
+                {
+                    bodyA.node?.removeFromParent()
+                    //print("Enemy bullet hit player, killed bullet")
                 
-            }
+                }
               
-        
+//                else if contactB == Type.Bullet
+//                {
+//                    bodyA.node?.removeFromParent()
+//                    //print("Enemy bullet hit player, killed bullet")
+//                    
+//                }
                 
-            else if contactB == Type.Border
+                else if contactB == Type.Border
+                {
+                    bodyA.node?.removeFromParent()
+                    print("Enemy bullet hit border, killed bullet")
+                }
+                break
+            
+        
+        case Type.Enemy:
+            
+            
+            
+            if contactB == Type.Bullet
             {
-                bodyA.node?.removeFromParent()
-                print("Enemy bullet hit border, killed bullet")
+                bodyB.node?.removeFromParent()
+                //print("Enemy bullet hit player, killed bullet")
+                  enemyHealth -= 0.026
             }
+                
+          
             break
             
         case Type.Bullet:
             
-            if contactB == Type.Enemy
+            
+                if contactB == Type.Enemy
+                {
+                    bodyA.node?.removeFromParent()
+                    // print("Bullet hit enemy killed bullet")
+                  
+                
+                }
+                    
+//                if contactB == Type.EnemyBullet
+//                {
+//                    bodyA.node?.removeFromParent()
+//                    //print("Enemy bullet hit player, killed bullet")
+//                    
+//                }
+                
+                else if contactB == Type.Border
+                {
+                    bodyA.node?.removeFromParent()
+                    print("Bullet hit border, killed ubllet")
+                }
+                break
+            
+        
+            
+        case Type.Border:
+            
+            
+            if contactB == Type.EnemyBullet
             {
-                bodyA.node?.removeFromParent()
-               // print("Bullet hit enemy killed bullet")
+                bodyB.node?.removeFromParent()
                 
             }
                 
-            else if contactB == Type.Border
+            else if contactB == Type.Bullet
             {
-                bodyA.node?.removeFromParent()
-                print("Bullet hit border, killed ubllet")
+                bodyB.node?.removeFromParent()
+                
             }
             break
             
-        
+            
+            
+        case Type.Player:
+            
+            
+            if contactB == Type.EnemyBullet
+            {
+                bodyB.node?.removeFromParent()
+                health -= 0.026
+                
+            }
+                
+         
+            break
+            
+            
             
         default:
             break
@@ -605,7 +761,14 @@ func resetEnemyBusy(time : Double){
    
 
     
-    
+    func reloadScene(){
+        
+        let nextScene = GameScene(size: scene!.size)
+        
+        
+        scene?.view?.presentScene(nextScene)
+        
+    }
   
 
 }

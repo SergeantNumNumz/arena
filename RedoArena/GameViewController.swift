@@ -30,10 +30,10 @@ class GameViewController: UIViewController {
            
             
             
-            //scene.physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRectMake(0, 0, skView.frame.width, skView.frame.height * 0.25))
-           // scene.physicsBody = [SKPhysicsBody bodyWithEdgeLoopFromRect: self.frame];
+           // scene.physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRectMake(0, 0, skView.frame.width, skView.frame.height * 0.25))
+            scene.physicsBody = SKPhysicsBody(rectangleOfSize: skView.bounds.size)
     
-
+    skView.showsPhysics = true;
         
 
             skView.presentScene(scene)
